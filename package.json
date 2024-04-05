@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "esbuild main.ts --bundle --outfile=build/main.js --watch"
+  },
+  "dependencies": {
+    "three": "^0.163.0",
+    "typescript": "^5.4.4"
+  },
+  "devDependencies": {
+    "@types/three": "^0.163.0",
+    "esbuild": "^0.20.2"
+  }
+}
