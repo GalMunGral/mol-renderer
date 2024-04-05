@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "dev": "esbuild main.ts --bundle --outfile=build/main.js --watch"
+    "build": "esbuild main.ts --bundle --outfile=build/main.js",
+    "start": "npm run build && npx serve build",
+    "dev": "npm run build -- --watch"
   },
   "dependencies": {
     "three": "^0.163.0",
