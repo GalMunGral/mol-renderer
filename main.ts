@@ -190,7 +190,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const directionalLight = new THREE.DirectionalLight(0xffffff);
   scene.add(directionalLight);
 
-  camera.position.z = BOX_SIZE;
+  camera.position.z = BOX_SIZE * 1.5;
 
   let scale = 1;
 
@@ -226,7 +226,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
       function toDir(x: number, y: number) {
         const rect = renderer.domElement.getBoundingClientRect();
-        const z = new THREE.Vector3(0, 0, 5).project(camera).z;
+        const z = new THREE.Vector3(0, 0, BOX_SIZE / 4).project(camera).z;
         return new THREE.Vector3(
           ((x - rect.left) / rect.width) * 2 - 1,
           ((rect.bottom - y) / rect.height) * 2 - 1,
