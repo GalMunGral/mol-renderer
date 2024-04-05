@@ -68,8 +68,10 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
 (async () => {
   const name = new URLSearchParams(location.search).get("name");
-  const res = await fetch(`./mol2/${name}.mol2`);
+  const res = await fetch(name ? `./mol2/${name}.mol2` : "./sample.mol2");
   const { atoms, bonds } = parse(await res.text());
+
+  const BOX_SIZE = 50;
 
   let minX = Infinity,
     maxX = -Infinity,
@@ -90,10 +92,13 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const centerZ = (minZ + maxZ) / 2;
+  let s = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+  const radius = 20 / s;
+
   for (let atom of atoms) {
-    atom.x -= centerX;
-    atom.y -= centerY;
-    atom.z -= centerZ;
+    atom.x = ((atom.x - centerX) / s) * BOX_SIZE;
+    atom.y = ((atom.y - centerY) / s) * BOX_SIZE;
+    atom.z = ((atom.z - centerZ) / s) * BOX_SIZE;
   }
 
   const scene = new THREE.Scene();
@@ -109,8 +114,6 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
-
-  const radius = 0.4;
 
   const atomMeshes = atoms.map((atom) => {
     const geometry = new THREE.SphereGeometry(radius).translate(
@@ -187,14 +190,15 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const directionalLight = new THREE.DirectionalLight(0xffffff);
   scene.add(directionalLight);
 
-  camera.position.z = 30;
+  camera.position.z = BOX_SIZE;
 
   let scale = 1;
+
   window.addEventListener(
     "wheel",
     (e: WheelEvent) => {
       e.preventDefault();
-      scale = Math.max(0.5, scale - 0.01 * e.deltaY);
+      scale = Math.max(0.1, scale - 0.01 * e.deltaY);
     },
     {
       passive: false,
