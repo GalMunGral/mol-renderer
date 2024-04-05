@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ElementColors } from "./colorMap.js";
 
 interface Atom {
   x: number;
@@ -15,18 +16,8 @@ interface Bond {
 }
 
 function colorMap(aType: string) {
-  switch (aType) {
-    case "H":
-      return 0xffffff;
-    case "C":
-      return 0xa0a0a0;
-    case "N":
-      return 0x2060ff;
-    case "O":
-      return 0xee2010;
-    default:
-      return 0xd0d0d0;
-  }
+  const element = aType.split(".")[0];
+  return ElementColors[element.toUpperCase()] || 0xaaaaaa;
 }
 
 function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
