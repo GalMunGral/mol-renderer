@@ -17,7 +17,7 @@ interface Bond {
 
 function colorMap(aType: string) {
   const element = aType.split(".")[0];
-  return ElementColors[element.toUpperCase()] || 0xaaaaaa;
+  return ElementColors[element.toUpperCase()] || 0xdddddd;
 }
 
 function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
@@ -84,7 +84,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const centerY = (minY + maxY) / 2;
   const centerZ = (minZ + maxZ) / 2;
   let s = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
-  const radius = 20 / s;
+  const radius = 8 / s;
 
   for (let atom of atoms) {
     atom.x = ((atom.x - centerX) / s) * BOX_SIZE;
@@ -107,7 +107,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   document.body.appendChild(renderer.domElement);
 
   const atomMeshes = atoms.map((atom) => {
-    const geometry = new THREE.SphereGeometry(radius).translate(
+    const geometry = new THREE.SphereGeometry(3 * radius).translate(
       atom.x,
       atom.y,
       atom.z
@@ -242,15 +242,14 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     }
   });
 
+  const yAxis = new THREE.Vector3(0, 1, 0);
   function animate() {
     requestAnimationFrame(animate);
 
-    meshes.forEach((mesh) => {
-      if (!pointerDown) {
-        mesh.rotation.y += 0.01;
-      }
-      mesh.scale.set(scale, scale, scale);
-    });
+    meshes.forEach((mesh) => mesh.scale.set(scale, scale, scale));
+    if (!pointerDown) {
+      meshes.forEach((mesh) => mesh.rotateOnWorldAxis(yAxis, 0.01));
+    }
 
     renderer.render(scene, camera);
   }
