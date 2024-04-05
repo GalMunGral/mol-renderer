@@ -112,8 +112,9 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
       atom.y,
       atom.z
     );
-    const material = new THREE.MeshPhysicalMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: atom.highlight ? 0x00ff00 : colorMap(atom.type),
+      roughness: 0.5,
     });
     const mesh = new THREE.Mesh(geometry, material);
     return mesh;
@@ -146,8 +147,9 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     const highlight =
       bond.highlight || (bond.start.highlight && bond.end.highlight);
 
-    const material1 = new THREE.MeshPhysicalMaterial({
+    const material1 = new THREE.MeshStandardMaterial({
       color: highlight ? 0x00ff00 : colorMap(bond.start.type),
+      roughness: 0.5,
     });
     const mesh1 = new THREE.Mesh(geometry1, material1);
 
@@ -163,8 +165,9 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
         (end.z + center.z) / 2
       );
 
-    const material2 = new THREE.MeshPhysicalMaterial({
+    const material2 = new THREE.MeshStandardMaterial({
       color: highlight ? 0x00ff00 : colorMap(bond.end.type),
+      roughness: 0.5,
     });
     const mesh2 = new THREE.Mesh(geometry2, material2);
 
@@ -181,7 +184,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const directionalLight = new THREE.DirectionalLight(0xffffff);
   scene.add(directionalLight);
 
-  camera.position.z = BOX_SIZE * 1.5;
+  camera.position.z = BOX_SIZE * 1.25;
 
   let scale = 1;
 
@@ -242,7 +245,12 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   function animate() {
     requestAnimationFrame(animate);
 
-    meshes.forEach((mesh) => mesh.scale.set(scale, scale, scale));
+    meshes.forEach((mesh) => {
+      if (!pointerDown) {
+        mesh.rotation.y += 0.01;
+      }
+      mesh.scale.set(scale, scale, scale);
+    });
 
     renderer.render(scene, camera);
   }
