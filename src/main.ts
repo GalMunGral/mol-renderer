@@ -194,7 +194,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     "wheel",
     (e: WheelEvent) => {
       e.preventDefault();
-      scale = Math.min(10, Math.max(0.1, scale - 0.01 * e.deltaY));
+      scale = Math.min(10, Math.max(1, scale - 0.01 * e.deltaY));
     },
     {
       passive: false,
@@ -222,7 +222,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
       function toDir(x: number, y: number) {
         const rect = renderer.domElement.getBoundingClientRect();
-        const z = new THREE.Vector3(0, 0, BOX_SIZE / 4).project(camera).z;
+        const z = new THREE.Vector3(0, 0, BOX_SIZE / 5).project(camera).z;
         return new THREE.Vector3(
           ((x - rect.left) / rect.width) * 2 - 1,
           ((rect.bottom - y) / rect.height) * 2 - 1,
