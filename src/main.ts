@@ -212,14 +212,6 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   window.addEventListener("pointerup", () => (pointerDown = false));
   window.addEventListener("pointermove", (e) => {
     if (pointerDown) {
-      // const deltaX = e.screenX - prevX;
-      // const deltaY = e.screenY - prevY;
-      // const axis = new THREE.Vector3(0, 0, 1)
-      //   .cross(new THREE.Vector3(deltaX, -deltaY, 0))
-      //   .normalize();
-      // const angle = 0.01 * Math.sqrt(deltaX ** 2 + deltaY ** 2);
-      // meshes.forEach((mesh) => mesh.rotateOnWorldAxis(axis, angle));
-
       function toDir(x: number, y: number) {
         const rect = renderer.domElement.getBoundingClientRect();
         const z = new THREE.Vector3(0, 0, BOX_SIZE / 5).project(camera).z;
