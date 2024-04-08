@@ -17,7 +17,7 @@ interface Bond {
 
 function colorMap(aType: string) {
   const element = aType.split(".")[0];
-  return ElementColors[element.toUpperCase()] || 0xc0c0c0;
+  return ElementColors[element.toUpperCase()] || 0xd0d0d0;
 }
 
 function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
@@ -84,20 +84,19 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   const centerY = (minY + maxY) / 2;
   const centerZ = (minZ + maxZ) / 2;
   let s = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
-  const radius = 10 / s;
+  const radius = 8 / s;
 
   for (let atom of atoms) {
-    atom.x = ((atom.x - centerX) / s) * BOX_SIZE;
-    atom.y = ((atom.y - centerY) / s) * BOX_SIZE;
-    atom.z = ((atom.z - centerZ) / s) * BOX_SIZE;
+    atom.x = ((atom.x - centerX) / s) * (BOX_SIZE / 2);
+    atom.y = ((atom.y - centerY) / s) * (BOX_SIZE / 2);
+    atom.z = ((atom.z - centerZ) / s) * (BOX_SIZE / 2);
   }
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
-  scene.fog = new THREE.FogExp2(0xffffff, 0.01);
+  scene.background = new THREE.Color(0xdddddd);
 
   const camera = new THREE.PerspectiveCamera(
-    75,
+    50,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
@@ -184,10 +183,10 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
   scene.add(AmbientLight);
 
   const directionalLight = new THREE.DirectionalLight(0xffffff);
-  directionalLight.position.set(1, 1, 0);
+  directionalLight.position.set(2 * BOX_SIZE, -2 * BOX_SIZE, 2 * BOX_SIZE);
   scene.add(directionalLight);
 
-  camera.position.z = 1.2 * BOX_SIZE;
+  camera.position.z = BOX_SIZE;
 
   let scale = 1;
 
@@ -195,7 +194,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     "wheel",
     (e: WheelEvent) => {
       e.preventDefault();
-      scale = Math.max(0.1, scale - 0.01 * e.deltaY);
+      scale = Math.min(10, Math.max(0.1, scale - 0.01 * e.deltaY));
     },
     {
       passive: false,
