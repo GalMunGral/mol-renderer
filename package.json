@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "three": "^0.163.0",
+    "three-addons": "^1.2.0",
     "typescript": "^5.4.4"
   },
   "devDependencies": {
