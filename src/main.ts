@@ -180,7 +180,10 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
   const meshes: THREE.Mesh[] = [...atomMeshes, ...bondMeshes];
 
-  meshes.forEach((mesh) => (mesh.castShadow = true));
+  meshes.forEach((mesh) => {
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+  });
   meshes.forEach((mesh) => scene.add(mesh));
 
   const AmbientLight = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
@@ -188,6 +191,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
   const pointLight = new THREE.PointLight(0xffffff, 1, 1000, 0);
   pointLight.position.set(2 * BOX_SIZE, -2 * BOX_SIZE, 2 * BOX_SIZE);
+  pointLight.shadow.mapSize.set(1024, 1024);
   pointLight.castShadow = true;
   pointLight.shadow.radius = 10;
   scene.add(pointLight);
