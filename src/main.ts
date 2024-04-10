@@ -71,6 +71,8 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     minZ = Infinity,
     maxZ = -Infinity;
 
+  let s = 0;
+
   for (let atom of atoms) {
     minX = Math.min(minX, atom.x);
     maxX = Math.max(maxX, atom.x);
@@ -78,31 +80,33 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     maxY = Math.max(maxY, atom.y);
     minZ = Math.min(minZ, atom.z);
     maxZ = Math.max(maxZ, atom.z);
+    s = Math.max(s, Math.sqrt(atom.x ** 2 + atom.y ** 2 + atom.z ** 2));
   }
 
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const centerZ = (minZ + maxZ) / 2;
-  let s = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
-  const radius = 8 / s;
+  const radius = 20 / s;
 
   for (let atom of atoms) {
-    atom.x = ((atom.x - centerX) / s) * (BOX_SIZE / 2);
-    atom.y = ((atom.y - centerY) / s) * (BOX_SIZE / 2);
-    atom.z = ((atom.z - centerZ) / s) * (BOX_SIZE / 2);
+    atom.x = ((atom.x - centerX) / s) * BOX_SIZE;
+    atom.y = ((atom.y - centerY) / s) * BOX_SIZE;
+    atom.z = ((atom.z - centerZ) / s) * BOX_SIZE;
   }
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xdddddd);
+  scene.background = new THREE.Color(0xffffff);
 
   const camera = new THREE.PerspectiveCamera(
-    50,
+    75,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
+  camera.translateY(-1.5 * BOX_SIZE).lookAt(new THREE.Vector3());
 
   const renderer = new THREE.WebGLRenderer();
+  renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
@@ -115,7 +119,6 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     );
     const material = new THREE.MeshStandardMaterial({
       color: atom.highlight ? 0x00ff00 : colorMap(atom.type),
-      roughness: 0.5,
     });
     const mesh = new THREE.Mesh(geometry, material);
     return mesh;
@@ -177,16 +180,53 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
 
   const meshes: THREE.Mesh[] = [...atomMeshes, ...bondMeshes];
 
+  meshes.forEach((mesh) => (mesh.castShadow = true));
   meshes.forEach((mesh) => scene.add(mesh));
 
   const AmbientLight = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
   scene.add(AmbientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff);
-  directionalLight.position.set(2 * BOX_SIZE, -2 * BOX_SIZE, 2 * BOX_SIZE);
-  scene.add(directionalLight);
+  const pointLight = new THREE.PointLight(0xffffff, 1, 1000, 0);
+  pointLight.position.set(2 * BOX_SIZE, -2 * BOX_SIZE, 2 * BOX_SIZE);
+  pointLight.castShadow = true;
+  pointLight.shadow.radius = 10;
+  scene.add(pointLight);
 
-  camera.position.z = BOX_SIZE;
+  const WALL_DIST = BOX_SIZE;
+  const WALL_COLOR = 0xffffff;
+
+  const planeGeometry1 = new THREE.PlaneGeometry(1000, 1000);
+  const planeMaterial1 = new THREE.MeshStandardMaterial({
+    color: WALL_COLOR,
+  });
+  const plane1 = new THREE.Mesh(planeGeometry1, planeMaterial1);
+  plane1.translateZ(-WALL_DIST);
+  plane1.receiveShadow = true;
+  scene.add(plane1);
+
+  const planeGeometry2 = new THREE.PlaneGeometry(1000, 1000);
+  const planeMaterial2 = new THREE.MeshStandardMaterial({
+    color: WALL_COLOR,
+  });
+  const plane2 = new THREE.Mesh(planeGeometry2, planeMaterial2);
+  plane2
+    .rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2)
+    .rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4)
+    .translateZ(-WALL_DIST);
+  plane2.receiveShadow = true;
+  scene.add(plane2);
+
+  const planeGeometry3 = new THREE.PlaneGeometry(1000, 1000);
+  const planeMaterial3 = new THREE.MeshStandardMaterial({
+    color: WALL_COLOR,
+  });
+  const plane3 = new THREE.Mesh(planeGeometry3, planeMaterial3);
+  plane3
+    .rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2)
+    .rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 4)
+    .translateZ(-WALL_DIST);
+  plane3.receiveShadow = true;
+  scene.add(plane3);
 
   let scale = 1;
 
@@ -194,7 +234,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     "wheel",
     (e: WheelEvent) => {
       e.preventDefault();
-      scale = Math.min(10, Math.max(1, scale - 0.01 * e.deltaY));
+      scale = Math.min(2, Math.max(1, scale - 0.01 * e.deltaY));
     },
     {
       passive: false,
@@ -214,7 +254,7 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     if (pointerDown) {
       function toDir(x: number, y: number) {
         const rect = renderer.domElement.getBoundingClientRect();
-        const z = new THREE.Vector3(0, 0, BOX_SIZE / 5).project(camera).z;
+        const z = new THREE.Vector3(0, -BOX_SIZE / 4, 0).project(camera).z;
         return new THREE.Vector3(
           ((x - rect.left) / rect.width) * 2 - 1,
           ((rect.bottom - y) / rect.height) * 2 - 1,
@@ -236,13 +276,13 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     }
   });
 
-  const yAxis = new THREE.Vector3(0, 1, 0);
+  const zAxis = new THREE.Vector3(0, 0, 1);
   function animate() {
     requestAnimationFrame(animate);
 
     meshes.forEach((mesh) => mesh.scale.set(scale, scale, scale));
     if (!pointerDown) {
-      meshes.forEach((mesh) => mesh.rotateOnWorldAxis(yAxis, 0.01));
+      meshes.forEach((mesh) => mesh.rotateOnWorldAxis(zAxis, 0.01));
     }
 
     renderer.render(scene, camera);
