@@ -19,10 +19,10 @@ Parse a real molecule from a Tripos Mol2 file and render it as a ball-and-stick 
 Each bond is a pair of cylinders, one per endpoint, colored by element. A cylinder is oriented along the $Y$-axis by default. Let $\mathbf{u} = (0,1,0)$ and $\mathbf{d} = (\mathbf{b} - \mathbf{a})/\|\mathbf{b} - \mathbf{a}\|$ be the bond direction. The quaternion
 
 ```math
-q = \cos\tfrac{\theta}{2} + \sin\tfrac{\theta}{2}\,(\mathbf{u} \times \mathbf{d}), \qquad \theta = \arccos(\mathbf{u} \cdot \mathbf{d})
+q = \cos\tfrac{\theta}{2} + \sin\tfrac{\theta}{2}\,\frac{\mathbf{u} \times \mathbf{d}}{\|\mathbf{u} \times \mathbf{d}\|}, \qquad \theta = \arccos(\mathbf{u} \cdot \mathbf{d})
 ```
 
-encodes a rotation about axis $\mathbf{u} \times \mathbf{d}$. A unit quaternion $q = (w, x, y, z)$ acts on vectors via $\mathbf{v} \mapsto q\mathbf{v}q^{-1}$, equivalent to the rotation matrix
+encodes a rotation by $\theta$ about axis $(\mathbf{u} \times \mathbf{d}) / \|\mathbf{u} \times \mathbf{d}\|$. Here $\mathbb{R}^3$ is embedded in the quaternions by identifying $\mathbf{v}$ with the pure quaternion $v_x i + v_y j + v_z k$. A unit quaternion $q = (w, x, y, z)$ acts on vectors via $\mathbf{v} \mapsto q\mathbf{v}q^{-1}$, equivalent to the rotation matrix
 
 ```math
 R(q) = \begin{pmatrix} 1-2(y^2+z^2) & 2(xy-wz) & 2(xz+wy) \\ 2(xy+wz) & 1-2(x^2+z^2) & 2(yz-wx) \\ 2(xz-wy) & 2(yz+wx) & 1-2(x^2+y^2) \end{pmatrix}
