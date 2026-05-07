@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mol Renderer</title>
+    <style>
+      body { margin: 0; }
+      #controls {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        display: flex;
+        gap: 8px;
+      }
+      #controls button {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+      }
+      #controls button.active {
+        background: rgba(255,255,255,0.25);
+        border-color: rgba(255,255,255,0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <button id="btn-wireframe">Wireframe</button>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

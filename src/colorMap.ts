@@ -1,97 +1,97 @@
 export const ElementColors: Record<string, number> = {
-  H: 0xffffff, // Hydrogen - White
-  HE: 0xffd700, // Helium - Gold
-  LI: 0x800080, // Lithium - Purple
-  BE: 0x00ff00, // Beryllium - Green
-  B: 0xffa500, // Boron - Orange
-  C: 0x000000, // Carbon - Black
-  N: 0x0000ff, // Nitrogen - Blue
-  O: 0xff0000, // Oxygen - Red
-  F: 0x00ffff, // Fluorine - Cyan
-  NE: 0xadd8e6, // Neon - Light Blue
-  NA: 0xffa500, // Sodium - Orange
-  MG: 0x00ff00, // Magnesium - Green
-  AL: 0x808080, // Aluminum - Grey
-  SI: 0xa52a2a, // Silicon - Brown
-  P: 0xffa500, // Phosphorus - Orange
-  S: 0xffff00, // Sulfur - Yellow
-  CL: 0x00ff00, // Chlorine - Green
-  AR: 0x808080, // Argon - Grey
-  K: 0xffa500, // Potassium - Orange
-  CA: 0xffa500, // Calcium - Orange
-  SC: 0x800080, // Scandium - Purple
-  TI: 0x808080, // Titanium - Grey
-  V: 0x808080, // Vanadium - Grey
-  CR: 0x808080, // Chromium - Grey
-  MN: 0x808080, // Manganese - Grey
-  FE: 0xa52a2a, // Iron - Brown
-  CO: 0x808080, // Cobalt - Grey
-  NI: 0x808080, // Nickel - Grey
-  CU: 0xffd700, // Copper - Gold
-  ZN: 0x808080, // Zinc - Grey
-  GA: 0x808080, // Gallium - Grey
-  GE: 0x808080, // Germanium - Grey
-  AS: 0x800080, // Arsenic - Purple
-  SE: 0xffff00, // Selenium - Yellow
-  BR: 0x800080, // Bromine - Purple
-  KR: 0x808080, // Krypton - Grey
-  RB: 0xffa500, // Rubidium - Orange
-  SR: 0xffa500, // Strontium - Orange
-  Y: 0x800080, // Yttrium - Purple
-  ZR: 0x808080, // Zirconium - Grey
-  NB: 0x808080, // Niobium - Grey
-  MO: 0x808080, // Molybdenum - Grey
-  TC: 0x808080, // Technetium - Grey
-  RU: 0x808080, // Ruthenium - Grey
-  RH: 0x808080, // Rhodium - Grey
-  PD: 0x808080, // Palladium - Grey
-  AG: 0xc0c0c0, // Silver - Silver
-  CD: 0x808080, // Cadmium - Grey
-  IN: 0x808080, // Indium - Grey
-  SN: 0x808080, // Tin - Grey
-  SB: 0x800080, // Antimony - Purple
-  TE: 0x800080, // Tellurium - Purple
-  I: 0x800080, // Iodine - Purple
-  XE: 0x808080, // Xenon - Grey
-  CS: 0xffa500, // Cesium - Orange
-  BA: 0xffa500, // Barium - Orange
-  LA: 0x800080, // Lanthanum - Purple
-  CE: 0x800080, // Cerium - Purple
-  PR: 0x800080, // Praseodymium - Purple
-  ND: 0x800080, // Neodymium - Purple
-  PM: 0x800080, // Promethium - Purple
-  SM: 0x800080, // Samarium - Purple
-  EU: 0x800080, // Europium - Purple
-  GD: 0x800080, // Gadolinium - Purple
-  TB: 0x800080, // Terbium - Purple
-  DY: 0x800080, // Dysprosium - Purple
-  HO: 0x800080, // Holmium - Purple
-  ER: 0x800080, // Erbium - Purple
-  TM: 0x800080, // Thulium - Purple
-  YB: 0x800080, // Ytterbium - Purple
-  LU: 0x800080, // Lutetium - Purple
-  HF: 0x808080, // Hafnium - Grey
-  TA: 0x808080, // Tantalum - Grey
-  W: 0x808080, // Tungsten - Grey
-  RE: 0x808080, // Rhenium - Grey
-  OS: 0x808080, // Osmium - Grey
-  IR: 0x808080, // Iridium - Grey
-  PT: 0x808080, // Platinum - Grey
-  AU: 0xffd700, // Gold - Gold
-  HG: 0x808080, // Mercury - Grey
-  TL: 0x808080, // Thallium - Grey
-  PB: 0x808080, // Lead - Grey
-  BI: 0x808080, // Bismuth - Grey
-  PO: 0x808080, // Polonium - Grey
-  AT: 0x800080, // Astatine - Purple
-  RN: 0x808080, // Radon - Grey
-  FR: 0xffa500, // Francium - Orange
-  RA: 0xffa500, // Radium - Orange
-  AC: 0x800080, // Actinium - Purple
-  TH: 0x800080, // Thorium - Purple
-  PA: 0x800080, // Protactinium - Purple
-  U: 0x800080, // Uranium - Purple
-  NP: 0x800080, // Neptunium - Purple
-  PU: 0x800080, // Plutonium - Purple
-  AM: 0x800080, // Americium - Purple
+  H:  0xffffff,
+  HE: 0xd9ffff,
+  LI: 0xcc80ff,
+  BE: 0xc2ff00,
+  B:  0xffb5b5,
+  C:  0x909090,
+  N:  0x3050f8,
+  O:  0xff0d0d,
+  F:  0x90e050,
+  NE: 0xb3e3f5,
+  NA: 0xab5cf2,
+  MG: 0x8aff00,
+  AL: 0xbfa6a6,
+  SI: 0xf0c8a0,
+  P:  0xff8000,
+  S:  0xffff30,
+  CL: 0x1ff01f,
+  AR: 0x80d1e3,
+  K:  0x8f40d4,
+  CA: 0x3dff00,
+  SC: 0xe6e6e6,
+  TI: 0xbfc2c7,
+  V:  0xa6a6ab,
+  CR: 0x8a99c7,
+  MN: 0x9c7ac7,
+  FE: 0xe06633,
+  CO: 0xf090a0,
+  NI: 0x50d050,
+  CU: 0xc88033,
+  ZN: 0x7d80b0,
+  GA: 0xc28f8f,
+  GE: 0x668f8f,
+  AS: 0xbd80e3,
+  SE: 0xffa100,
+  BR: 0xa62929,
+  KR: 0x5cb8d1,
+  RB: 0x702eb0,
+  SR: 0x00ff00,
+  Y:  0x94ffff,
+  ZR: 0x94e0e0,
+  NB: 0x73c2c9,
+  MO: 0x54b5b5,
+  TC: 0x3b9e9e,
+  RU: 0x248f8f,
+  RH: 0x0a7d8c,
+  PD: 0x006985,
+  AG: 0xc0c0c0,
+  CD: 0xffd98f,
+  IN: 0xa67573,
+  SN: 0x668080,
+  SB: 0x9e63b5,
+  TE: 0xd47a00,
+  I:  0x940094,
+  XE: 0x429eb0,
+  CS: 0x57178f,
+  BA: 0x00c900,
+  LA: 0x70d4ff,
+  CE: 0xffffc7,
+  PR: 0xd9ffc7,
+  ND: 0xc7ffc7,
+  PM: 0xa3ffc7,
+  SM: 0x8fffc7,
+  EU: 0x61ffc7,
+  GD: 0x45ffc7,
+  TB: 0x30ffc7,
+  DY: 0x1fffc7,
+  HO: 0x00ff9c,
+  ER: 0x00e675,
+  TM: 0x00d452,
+  YB: 0x00bf38,
+  LU: 0x00ab24,
+  HF: 0x4dc2ff,
+  TA: 0x4da6ff,
+  W:  0x2194d6,
+  RE: 0x267dab,
+  OS: 0x266696,
+  IR: 0x175487,
+  PT: 0xd0d0e0,
+  AU: 0xffd123,
+  HG: 0xb8b8d0,
+  TL: 0xa6544d,
+  PB: 0x575961,
+  BI: 0x9e4fb5,
+  PO: 0xab5c00,
+  AT: 0x754f45,
+  RN: 0x428296,
+  FR: 0x420066,
+  RA: 0x007d00,
+  AC: 0x70abfa,
+  TH: 0x00baff,
+  PA: 0x00a1ff,
+  U:  0x008fff,
+  NP: 0x0080ff,
+  PU: 0x006bff,
+  AM: 0x545cf2,
 };

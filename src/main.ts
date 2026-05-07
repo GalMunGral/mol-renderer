@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { ArcballControls } from "three/addons/controls/ArcballControls.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { ElementColors } from "./colorMap.js";
 
 interface Atom {
@@ -34,52 +36,45 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     } else if (line.startsWith("@")) {
       section = "other";
     } else if (section === "atom") {
-      let [id, name, x, y, z, type, , , , highlight] = line.split(/\s+/);
-      atoms[id] = {
-        type,
-        x: +x,
-        y: +y,
-        z: +z,
-        highlight: !!highlight,
-      };
+      let [id, , x, y, z, type, , , , highlight] = line.split(/\s+/);
+      atoms[id] = { type, x: +x, y: +y, z: +z, highlight: !!highlight };
     } else if (section === "bond") {
-      const [id, sId, eId, bType, highlight] = line.split(/\s+/);
-      bonds[id] = {
-        start: atoms[sId],
-        end: atoms[eId],
-        highlight: !!highlight,
-      };
+      const [id, sId, eId, , highlight] = line.split(/\s+/);
+      bonds[id] = { start: atoms[sId], end: atoms[eId], highlight: !!highlight };
     }
   }
-  return {
-    atoms: Object.values(atoms),
-    bonds: Object.values(bonds),
-  };
+  return { atoms: Object.values(atoms), bonds: Object.values(bonds) };
+}
+
+function withColor(geometry: THREE.BufferGeometry, hex: number) {
+  const color = new THREE.Color(hex);
+  const count = geometry.attributes.position.count;
+  const colors = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+  }
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  return geometry;
 }
 
 (async () => {
   const name = new URLSearchParams(location.search).get("name");
-  const res = await fetch(name ? `./mol2/${name}.mol2` : "./sample.mol2");
+  const res = await fetch(name ? `./${name}.mol2` : "./1et4.mol2");
   const { atoms, bonds } = parse(await res.text());
 
   const BOX_SIZE = 50;
 
-  let minX = Infinity,
-    maxX = -Infinity,
-    minY = Infinity,
-    maxY = -Infinity,
-    minZ = Infinity,
-    maxZ = -Infinity;
-
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  let minZ = Infinity, maxZ = -Infinity;
   let s = 0;
 
   for (let atom of atoms) {
-    minX = Math.min(minX, atom.x);
-    maxX = Math.max(maxX, atom.x);
-    minY = Math.min(minY, atom.y);
-    maxY = Math.max(maxY, atom.y);
-    minZ = Math.min(minZ, atom.z);
-    maxZ = Math.max(maxZ, atom.z);
+    minX = Math.min(minX, atom.x); maxX = Math.max(maxX, atom.x);
+    minY = Math.min(minY, atom.y); maxY = Math.max(maxY, atom.y);
+    minZ = Math.min(minZ, atom.z); maxZ = Math.max(maxZ, atom.z);
     s = Math.max(s, Math.sqrt(atom.x ** 2 + atom.y ** 2 + atom.z ** 2));
   }
 
@@ -94,8 +89,62 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     atom.z = ((atom.z - centerZ) / s) * BOX_SIZE;
   }
 
+  const geometries: THREE.BufferGeometry[] = [];
+
+  for (const atom of atoms) {
+    const hex = atom.highlight ? 0x00ff00 : colorMap(atom.type);
+    geometries.push(
+      withColor(
+        new THREE.SphereGeometry(radius, 8, 6).translate(atom.x, atom.y, atom.z),
+        hex
+      )
+    );
+  }
+
+  for (const bond of bonds) {
+    const start = new THREE.Vector3(bond.start.x, bond.start.y, bond.start.z);
+    const end = new THREE.Vector3(bond.end.x, bond.end.y, bond.end.z);
+    const center = start.clone().add(end).multiplyScalar(0.5);
+    const highlight = bond.highlight || (bond.start.highlight && bond.end.highlight);
+
+    const quaternion = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      end.clone().sub(start).normalize()
+    );
+
+    geometries.push(
+      withColor(
+        new THREE.CylinderGeometry(radius * 0.4, radius * 0.4, center.distanceTo(start), 6)
+          .applyQuaternion(quaternion)
+          .translate(
+            (start.x + center.x) / 2,
+            (start.y + center.y) / 2,
+            (start.z + center.z) / 2
+          ),
+        highlight ? 0x00ff00 : colorMap(bond.start.type)
+      )
+    );
+
+    geometries.push(
+      withColor(
+        new THREE.CylinderGeometry(radius * 0.4, radius * 0.4, end.distanceTo(center), 6)
+          .applyQuaternion(quaternion)
+          .translate(
+            (end.x + center.x) / 2,
+            (end.y + center.y) / 2,
+            (end.z + center.z) / 2
+          ),
+        highlight ? 0x00ff00 : colorMap(bond.end.type)
+      )
+    );
+  }
+
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0x1a1a1a);
+
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 });
+  const mesh = new THREE.Mesh(mergeGeometries(geometries), material);
+  scene.add(mesh);
 
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -103,192 +152,31 @@ function parse(mol2Src: string): { atoms: Atom[]; bonds: Bond[] } {
     0.1,
     1000
   );
-  camera.translateY(-1.5 * BOX_SIZE).lookAt(new THREE.Vector3());
+  camera.position.set(0, -0.5 * BOX_SIZE, 0);
+  camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer();
-  renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
 
-  const atomMeshes = atoms.map((atom) => {
-    const geometry = new THREE.SphereGeometry(radius).translate(
-      atom.x,
-      atom.y,
-      atom.z
-    );
-    const material = new THREE.MeshStandardMaterial({
-      color: atom.highlight ? 0x00ff00 : colorMap(atom.type),
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh;
-  });
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+  scene.add(ambientLight);
 
-  const bondMeshes = bonds.flatMap((bond) => {
-    const start = new THREE.Vector3(bond.start.x, bond.start.y, bond.start.z);
-    const end = new THREE.Vector3(bond.end.x, bond.end.y, bond.end.z);
-    const center = start.clone().add(end).multiplyScalar(0.5);
-
-    const quaternion = new THREE.Quaternion();
-    quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0),
-      end.clone().sub(start).normalize()
-    );
-    quaternion.normalize();
-
-    const geometry1 = new THREE.CylinderGeometry(
-      radius,
-      radius,
-      center.distanceTo(start)
-    )
-      .applyQuaternion(quaternion)
-      .translate(
-        (start.x + center.x) / 2,
-        (start.y + center.y) / 2,
-        (start.z + center.z) / 2
-      );
-
-    const highlight =
-      bond.highlight || (bond.start.highlight && bond.end.highlight);
-
-    const material1 = new THREE.MeshStandardMaterial({
-      color: highlight ? 0x00ff00 : colorMap(bond.start.type),
-      roughness: 0.5,
-    });
-    const mesh1 = new THREE.Mesh(geometry1, material1);
-
-    const geometry2 = new THREE.CylinderGeometry(
-      radius,
-      radius,
-      end.distanceTo(center)
-    )
-      .applyQuaternion(quaternion)
-      .translate(
-        (end.x + center.x) / 2,
-        (end.y + center.y) / 2,
-        (end.z + center.z) / 2
-      );
-
-    const material2 = new THREE.MeshStandardMaterial({
-      color: highlight ? 0x00ff00 : colorMap(bond.end.type),
-      roughness: 0.5,
-    });
-    const mesh2 = new THREE.Mesh(geometry2, material2);
-
-    return [mesh1, mesh2];
-  });
-
-  const meshes: THREE.Mesh[] = [...atomMeshes, ...bondMeshes];
-
-  meshes.forEach((mesh) => {
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-  });
-  meshes.forEach((mesh) => scene.add(mesh));
-
-  const AmbientLight = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
-  scene.add(AmbientLight);
-
-  const pointLight = new THREE.PointLight(0xffffff, 1, 1000, 0);
+  const pointLight = new THREE.PointLight(0xffffff, 2, 1000, 0);
   pointLight.position.set(2 * BOX_SIZE, -2 * BOX_SIZE, 2 * BOX_SIZE);
-  pointLight.shadow.mapSize.set(1024, 1024);
-  pointLight.castShadow = true;
-  pointLight.shadow.radius = 10;
   scene.add(pointLight);
 
-  const WALL_DIST = BOX_SIZE;
-  const WALL_COLOR = 0xffffff;
+  new ArcballControls(camera, renderer.domElement, scene);
 
-  const planeGeometry1 = new THREE.PlaneGeometry(1000, 1000);
-  const planeMaterial1 = new THREE.MeshStandardMaterial({
-    color: WALL_COLOR,
-  });
-  const plane1 = new THREE.Mesh(planeGeometry1, planeMaterial1);
-  plane1.translateZ(-WALL_DIST);
-  plane1.receiveShadow = true;
-  scene.add(plane1);
-
-  const planeGeometry2 = new THREE.PlaneGeometry(1000, 1000);
-  const planeMaterial2 = new THREE.MeshStandardMaterial({
-    color: WALL_COLOR,
-  });
-  const plane2 = new THREE.Mesh(planeGeometry2, planeMaterial2);
-  plane2
-    .rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2)
-    .rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4)
-    .translateZ(-WALL_DIST);
-  plane2.receiveShadow = true;
-  scene.add(plane2);
-
-  const planeGeometry3 = new THREE.PlaneGeometry(1000, 1000);
-  const planeMaterial3 = new THREE.MeshStandardMaterial({
-    color: WALL_COLOR,
-  });
-  const plane3 = new THREE.Mesh(planeGeometry3, planeMaterial3);
-  plane3
-    .rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2)
-    .rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 4)
-    .translateZ(-WALL_DIST);
-  plane3.receiveShadow = true;
-  scene.add(plane3);
-
-  let scale = 1;
-
-  window.addEventListener(
-    "wheel",
-    (e: WheelEvent) => {
-      e.preventDefault();
-      scale = Math.min(2, Math.max(1, scale - 0.01 * e.deltaY));
-    },
-    {
-      passive: false,
-    }
-  );
-
-  let pointerDown = false;
-  let prevX = -1;
-  let prevY = -1;
-  window.addEventListener("pointerdown", (e) => {
-    pointerDown = true;
-    prevX = e.clientX;
-    prevY = e.clientY;
-  });
-  window.addEventListener("pointerup", () => (pointerDown = false));
-  window.addEventListener("pointermove", (e) => {
-    if (pointerDown) {
-      function toDir(x: number, y: number) {
-        const rect = renderer.domElement.getBoundingClientRect();
-        const z = new THREE.Vector3(0, -BOX_SIZE / 4, 0).project(camera).z;
-        return new THREE.Vector3(
-          ((x - rect.left) / rect.width) * 2 - 1,
-          ((rect.bottom - y) / rect.height) * 2 - 1,
-          z
-        )
-          .unproject(camera)
-          .normalize();
-      }
-
-      const quaternion = new THREE.Quaternion();
-      quaternion.setFromUnitVectors(
-        toDir(prevX, prevY),
-        toDir(e.clientX, e.clientY)
-      );
-      meshes.forEach((mesh) => mesh.applyQuaternion(quaternion));
-
-      prevX = e.clientX;
-      prevY = e.clientY;
-    }
+  const btnWireframe = document.getElementById("btn-wireframe")!;
+  btnWireframe.addEventListener("click", () => {
+    material.wireframe = !material.wireframe;
+    btnWireframe.classList.toggle("active", material.wireframe);
   });
 
-  const zAxis = new THREE.Vector3(0, 0, 1);
   function animate() {
     requestAnimationFrame(animate);
-
-    meshes.forEach((mesh) => mesh.scale.set(scale, scale, scale));
-    if (!pointerDown) {
-      meshes.forEach((mesh) => mesh.rotateOnWorldAxis(zAxis, 0.01));
-    }
-
     renderer.render(scene, camera);
   }
 
